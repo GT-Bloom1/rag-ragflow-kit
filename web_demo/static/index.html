@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAG 课堂演示</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; background: #f4f6f9; color: #222; }
+  header { background: #1f3a5f; color: #fff; padding: 12px 24px; display: flex; align-items: center; gap: 24px; }
+  header h1 { font-size: 18px; margin: 0; }
+  nav button { background: none; border: none; color: #c8d6e8; font-size: 15px; padding: 6px 14px; cursor: pointer; border-radius: 4px; }
+  nav button.active { background: #2f5d8f; color: #fff; }
+  #status { margin-left: auto; font-size: 12px; color: #c8d6e8; text-align: right; line-height: 1.5; }
+  main { max-width: 1180px; margin: 20px auto; padding: 0 16px; }
+  .panel { display: none; } .panel.active { display: block; }
+  .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); padding: 16px 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 12px; color: #1f3a5f; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border-bottom: 1px solid #e6e9ee; padding: 8px; text-align: left; }
+  th { background: #f2f5f9; }
+  tr.doc { cursor: pointer; } tr.doc:hover { background: #f7fafd; } tr.doc.sel { background: #e8f0fa; }
+  label { font-size: 13px; color: #555; margin-right: 14px; white-space: nowrap; }
+  input[type=number] { width: 72px; padding: 4px; }
+  input[type=range] { vertical-align: middle; width: 120px; }
+  .btn { background: #2f6db5; color: #fff; border: none; border-radius: 4px; padding: 7px 16px; cursor: pointer; font-size: 14px; }
+  .btn:disabled { background: #9db3cc; cursor: default; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .q { flex: 1; min-width: 300px; padding: 8px 10px; font-size: 15px; border: 1px solid #c9d1db; border-radius: 4px; }
+  .chunk { border: 1px solid #e3e7ec; border-radius: 6px; padding: 10px 12px; margin: 8px 0; font-size: 14px; line-height: 1.7; white-space: pre-wrap; }
+  .meta { font-size: 12px; color: #667; margin-bottom: 4px; white-space: normal; }
+  .bar { display: inline-block; height: 8px; border-radius: 4px; vertical-align: middle; margin: 0 4px 0 2px; }
+  .b-all { background: #2f6db5; } .b-vec { background: #7fb069; } .b-kw { background: #e8a33d; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .split .card { margin: 0; }
+  .split h3 { font-size: 14px; margin: 0 0 6px; }
+  .hint { font-size: 13px; color: #667; }
+  #messages { min-height: 320px; max-height: 60vh; overflow-y: auto; }
+  .msg { margin: 12px 0; display: flex; } .msg.user { justify-content: flex-end; }
+  .bubble { max-width: 78%; padding: 10px 14px; border-radius: 8px; line-height: 1.7; font-size: 15px; white-space: pre-wrap; }
+  .user .bubble { background: #2f6db5; color: #fff; }
+  .bot .bubble { background: #f2f5f9; }
+  .refs { margin-top: 8px; font-size: 12px; color: #556; }
+  .refs details { margin-top: 4px; } .refs summary { cursor: pointer; }
+  .cite { background: #dbe7f6; color: #1f3a5f; border-radius: 3px; padding: 0 3px; font-size: 12px; }
+  .err { color: #c0392b; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RAG 知识库课堂演示</h1>
+  <nav>
+    <button data-tab="kb" class="active">知识库</button>
+    <button data-tab="search">检索测试</button>
+    <button data-tab="chat">聊天助手</button>
+  </nav>
+  <div id="status">加载中……</div>
+</header>
+
+<main>
+  <section id="kb" class="panel active">
+    <div class="card">
+      <h2>分块配置</h2>
+      <div class="row">
+        <label>Chunk Size（tokens）<input id="cs" type="number" min="32" max="2048" step="32"></label>
+        <label>Overlap（%）<input id="ov" type="number" min="0" max="50"></label>
+        <button class="btn" id="rebuild">重新分块</button>
+        <span class="hint">参数改变后重新分块并建立索引，可对比片段数量和内容的变化。</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>文档 <span class="hint">（点击一行查看分块结果）</span></h2>
+      <div class="row" style="margin-bottom:10px">
+        <input type="file" id="file" accept=".md,.txt">
+        <button class="btn" id="upload">上传</button>
+        <span class="hint">支持 UTF-8 编码的 .md / .txt 文件</span>
+      </div>
+      <table><thead><tr><th>文件</th><th>来源</th><th>字数</th><th>片段数</th></tr></thead><tbody id="docs"></tbody></table>
+    </div>
+    <div class="card" id="chunkCard" style="display:none"><h2 id="chunkTitle"></h2><div id="chunks"></div></div>
+  </section>
+
+  <section id="search" class="panel">
+    <div class="card">
+      <h2>检索测试</h2>
+      <div class="row">
+        <input class="q" id="sq" value="如何防止模型编造答案？">
+        <button class="btn" id="sbtn">检索</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label>向量权重 <input type="range" id="vw" min="0" max="1" step="0.1" value="0.7"> <b id="vwv">0.7</b></label>
+        <label>Top N <input type="number" id="tn" value="6" min="1" max="20"></label>
+        <label>相似度阈值 <input type="number" id="th" value="0.2" min="0" max="1" step="0.05"></label>
+        <label><input type="checkbox" id="cmp"> 对比纯关键词（权重 0）与纯向量（权重 1）</label>
+      </div>
+      <p class="hint">综合分 = 向量权重 × 向量相似度 + (1 − 向量权重) × 关键词相似度。
+        <span class="bar b-all" style="width:24px"></span>综合
+        <span class="bar b-vec" style="width:24px"></span>向量
+        <span class="bar b-kw" style="width:24px"></span>关键词</p>
+    </div>
+    <div id="sres"></div>
+  </section>
+
+  <section id="chat" class="panel">
+    <div class="card">
+      <h2>聊天助手 <span class="hint">（先检索知识库，再把片段交给大模型回答，回答中的 [编号] 对应引用片段）</span></h2>
+      <div id="messages"></div>
+      <div class="row" style="margin-top:10px">
+        <input class="q" id="cq" placeholder="输入问题，例如：监督学习和无监督学习有什么区别？">
+        <button class="btn" id="cbtn">发送</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label>向量权重 <input type="number" id="cvw" value="0.7" min="0" max="1" step="0.1"></label>
+        <label>Top N <input type="number" id="ctn" value="4" min="1" max="20"></label>
+        <label>阈值 <input type="number" id="cth" value="0.2" min="0" max="1" step="0.05"></label>
+        <label>Temperature <input type="number" id="ct" value="0.1" min="0" max="1.5" step="0.1"></label>
+        <span class="hint">CPU 推理较慢，回答逐字显示</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+async function api(path, body) {
+  const opt = body instanceof FormData ? {method: "POST", body}
+    : body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : {};
+  const r = await fetch(path, opt);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
+  return r.json();
+}
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button, .panel").forEach(e => e.classList.remove("active"));
+  b.classList.add("active"); $(b.dataset.tab).classList.add("active");
+});
+
+async function refresh() {
+  const s = await api("/api/status");
+  $("status").innerHTML = `Embedding：${esc(s.embedding)}<br>对话模型：${esc(s.chat_model)}<br>` +
+    `${s.documents} 个文档 · ${s.chunks} 个片段 · Chunk ${s.chunk_size} / Overlap ${s.overlap}%`;
+  $("cs").value = s.chunk_size; $("ov").value = s.overlap;
+  const docs = await api("/api/documents");
+  $("docs").innerHTML = docs.map(d => `<tr class="doc" data-name="${esc(d.name)}"><td>${esc(d.name)}</td>` +
+    `<td>${d.source}</td><td>${d.chars}</td><td>${d.chunks}</td></tr>`).join("");
+  document.querySelectorAll("tr.doc").forEach(tr => tr.onclick = () => showChunks(tr));
+}
+
+async function showChunks(tr) {
+  document.querySelectorAll("tr.doc").forEach(e => e.classList.remove("sel")); tr.classList.add("sel");
+  const name = tr.dataset.name, list = await api("/api/chunks?doc=" + encodeURIComponent(name));
+  $("chunkCard").style.display = "block";
+  $("chunkTitle").textContent = `${name} 的分块结果（${list.length} 个片段）`;
+  $("chunks").innerHTML = list.map((c, i) => `<div class="chunk"><div class="meta">片段 ${i + 1} · ${c.tokens} tokens</div>${esc(c.text)}</div>`).join("");
+}
+
+async function busy(btn, text, fn) {
+  const old = btn.textContent; btn.disabled = true; btn.textContent = text;
+  try { await fn(); } catch (e) { alert(e.message); } finally { btn.disabled = false; btn.textContent = old; }
+}
+
+$("rebuild").onclick = () => busy($("rebuild"), "分块中……", async () => {
+  await api("/api/config", {chunk_size: +$("cs").value, overlap: +$("ov").value});
+  $("chunkCard").style.display = "none"; await refresh();
+});
+$("upload").onclick = () => busy($("upload"), "上传中……", async () => {
+  if (!$("file").files.length) throw new Error("请先选择文件");
+  const fd = new FormData(); fd.append("file", $("file").files[0]);
+  await api("/api/upload", fd); $("file").value = ""; await refresh();
+});
+
+function hitHtml(h) {
+  const bar = (cls, v) => `<span class="bar ${cls}" style="width:${Math.round(v * 80)}px"></span>${v.toFixed(3)}`;
+  return `<div class="chunk"><div class="meta"><b>#${h.id}</b> ${esc(h.doc)} · ${h.tokens} tokens · ` +
+    `综合 ${bar("b-all", h.score)} 向量 ${bar("b-vec", h.vector)} 关键词 ${bar("b-kw", h.keyword)}</div>${esc(h.text)}</div>`;
+}
+
+$("vw").oninput = () => $("vwv").textContent = $("vw").value;
+async function doSearch() {
+  const base = {question: $("sq").value.trim(), top_n: +$("tn").value, threshold: +$("th").value};
+  if (!base.question) return;
+  const weights = $("cmp").checked ? [0, +$("vw").value, 1] : [+$("vw").value];
+  const res = await Promise.all(weights.map(w => api("/api/search", {...base, vector_weight: w})));
+  const block = (w, r) => `<div class="card"><h3>向量权重 ${w}（关键词权重 ${(1 - w).toFixed(1)}）· ` +
+    `${r.hits.length} 个片段 · ${r.seconds} 秒</h3>${r.hits.map(hitHtml).join("") || '<p class="hint">没有超过阈值的片段</p>'}</div>`;
+  $("sres").innerHTML = weights.length > 1
+    ? `<div class="split">${block(0, res[0])}${block(1, res[2])}</div><div style="height:16px"></div>${block(weights[1], res[1])}`
+    : block(weights[0], res[0]);
+}
+$("sbtn").onclick = () => busy($("sbtn"), "检索中……", doSearch);
+$("sq").onkeydown = e => { if (e.key === "Enter") $("sbtn").click(); };
+
+function addMsg(role, html) {
+  const d = document.createElement("div"); d.className = "msg " + role;
+  d.innerHTML = `<div class="bubble">${html}</div>`; $("messages").appendChild(d);
+  $("messages").scrollTop = 1e9; return d.querySelector(".bubble");
+}
+
+async function doChat() {
+  const q = $("cq").value.trim(); if (!q) return;
+  $("cq").value = ""; addMsg("user", esc(q));
+  const bubble = addMsg("bot", '<span class="hint">检索中……</span>');
+  const r = await fetch("/api/chat", {method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({question: q, vector_weight: +$("cvw").value, top_n: +$("ctn").value,
+                          threshold: +$("cth").value, temperature: +$("ct").value})});
+  if (!r.ok) { bubble.innerHTML = `<span class="err">请求失败：${r.status}</span>`; return; }
+  const reader = r.body.getReader(), dec = new TextDecoder();
+  let buf = "", answer = "", refs = [], stats = "";
+  const render = () => {
+    const text = esc(answer).replace(/\[(\d+)\]/g, '<span class="cite">[$1]</span>');
+    const refHtml = refs.length ? `<div class="refs">引用片段（${refs.length}）${stats}` + refs.map(h =>
+      `<details><summary>[${h.id}] ${esc(h.doc)} · 综合 ${h.score.toFixed(3)}</summary><div class="chunk">${esc(h.text)}</div></details>`).join("") + "</div>" : "";
+    bubble.innerHTML = (text || '<span class="hint">模型思考中……</span>') + refHtml;
+    $("messages").scrollTop = 1e9;
+  };
+  for (;;) {
+    const {value, done} = await reader.read(); if (done) break;
+    buf += dec.decode(value, {stream: true});
+    let i;
+    while ((i = buf.indexOf("\n\n")) >= 0) {
+      const line = buf.slice(0, i); buf = buf.slice(i + 2);
+      if (!line.startsWith("data: ")) continue;
+      const ev = JSON.parse(line.slice(6));
+      if (ev.type === "refs") refs = ev.hits;
+      else if (ev.type === "token") answer += ev.text;
+      else if (ev.type === "stats") stats = ` · 生成用时 ${ev.seconds} 秒`;
+      render();
+    }
+  }
+}
+$("cbtn").onclick = () => busy($("cbtn"), "回答中……", doChat);
+$("cq").onkeydown = e => { if (e.key === "Enter" && !$("cbtn").disabled) $("cbtn").click(); };
+
+refresh().catch(e => $("status").textContent = "无法连接后端：" + e.message);
+</script>
+</body>
+</html>

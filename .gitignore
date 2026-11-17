@@ -1,0 +1,8 @@
+config/.env
+results/.embed_cache/
+__pycache__/
+.pytest_cache/
+web_demo/uploads/
+docs/RAG_完整教程.docx
+docs/RAG_完整教程.md
+docs/RAG_完整教程.pdf

@@ -1,0 +1,32 @@
+{"id": "q01", "type": "semantic", "doc": "01_机器学习基础.md", "question": "监督学习和无监督学习有什么区别？", "evidence": "核心区别在于训练数据是否有标签", "answer": "监督学习使用带标签的数据，无监督学习使用无标签数据。"}
+{"id": "q02", "type": "semantic", "doc": "01_机器学习基础.md", "question": "模型在训练集上很好但测试集很差，这是什么现象？", "evidence": "过拟合是指模型在训练集上表现很好", "answer": "过拟合。"}
+{"id": "q03", "type": "semantic", "doc": "01_机器学习基础.md", "question": "怎样避免模型把噪声当成规律？", "evidence": "缓解过拟合的常用方法有", "answer": "增加数据、降低复杂度、正则化、提前停止、数据增强。", "evidence_all": ["缓解过拟合的常用方法有", "L2 正则化也称为权重衰减"]}
+{"id": "q04", "type": "keyword", "doc": "01_机器学习基础.md", "question": "课程推荐的训练集验证集测试集划分比例是多少？", "evidence": "7:1.5:1.5", "answer": "7:1.5:1.5。"}
+{"id": "q05", "type": "keyword", "doc": "01_机器学习基础.md", "question": "课程实验用几折交叉验证？", "evidence": "统一使用 5 折交叉验证", "answer": "5 折。"}
+{"id": "q06", "type": "semantic", "doc": "01_机器学习基础.md", "question": "类别不平衡时适合看哪个综合指标？", "evidence": "F1 分数是精确率和召回率的调和平均数", "answer": "F1 分数。"}
+{"id": "q07", "type": "semantic", "doc": "01_机器学习基础.md", "question": "逻辑回归是回归算法吗？", "evidence": "它实际上是一种分类算法", "answer": "不是，它是分类算法。"}
+{"id": "q08", "type": "semantic", "doc": "02_神经网络与训练.md", "question": "为什么单层感知机解决不了异或问题？", "evidence": "单层感知机只能解决线性可分问题", "answer": "单层感知机只能解决线性可分问题。"}
+{"id": "q09", "type": "semantic", "doc": "02_神经网络与训练.md", "question": "深层网络梯度消失可以用什么激活函数缓解？", "evidence": "ReLU 的定义是 max(0, x)", "answer": "ReLU。"}
+{"id": "q10", "type": "semantic", "doc": "02_神经网络与训练.md", "question": "神经网络是怎么训练的？", "evidence": "前向计算损失、反向传播梯度、更新参数", "answer": "前向计算损失、反向传播梯度、梯度下降更新参数。", "evidence_all": ["前向计算损失、反向传播梯度、更新参数", "新参数 = 旧参数 − 学习率 × 梯度"]}
+{"id": "q11", "type": "keyword", "doc": "02_神经网络与训练.md", "question": "实验默认的 batch size 是多少？", "evidence": "批大小（batch size）是 64", "answer": "64。"}
+{"id": "q12", "type": "keyword", "doc": "02_神经网络与训练.md", "question": "Adam 默认学习率是多少？", "evidence": "Adam 的默认学习率通常设为 0.001", "answer": "0.001。"}
+{"id": "q13", "type": "semantic", "doc": "02_神经网络与训练.md", "question": "步长设置得太大会发生什么？", "evidence": "学习率太大，损失会震荡甚至发散", "answer": "损失震荡甚至发散。"}
+{"id": "q14", "type": "semantic", "doc": "02_神经网络与训练.md", "question": "训练时随机让一部分神经元失效的方法叫什么？", "evidence": "Dropout 是一种专门用于神经网络的正则化方法", "answer": "Dropout。", "evidence_all": ["Dropout 是一种专门用于神经网络的正则化方法", "推理时关闭 Dropout"]}
+{"id": "q15", "type": "semantic", "doc": "02_神经网络与训练.md", "question": "上百层的网络为什么能训练起来？", "evidence": "ResNet 引入了残差连接", "answer": "ResNet 的残差连接。"}
+{"id": "q16", "type": "keyword", "doc": "02_神经网络与训练.md", "question": "使用 Tanh 时推荐什么初始化？", "evidence": "使用 Tanh 时推荐 Xavier 初始化", "answer": "Xavier 初始化。"}
+{"id": "q17", "type": "semantic", "doc": "03_大语言模型与幻觉.md", "question": "注意力分数是怎么计算的？", "evidence": "用查询与键的点积除以维度的平方根", "answer": "查询与键点积除以维度平方根，再 Softmax。"}
+{"id": "q18", "type": "semantic", "doc": "03_大语言模型与幻觉.md", "question": "大模型训练分几个阶段？", "evidence": "大语言模型的训练一般分为三个阶段", "answer": "预训练、指令微调、对齐训练。", "evidence_all": ["第一阶段是预训练", "第三阶段是对齐训练"]}
+{"id": "q19", "type": "keyword", "doc": "03_大语言模型与幻觉.md", "question": "LoRA 是什么？", "evidence": "LoRA 在原有权重旁边加入两个低秩矩阵", "answer": "参数高效微调方法，训练两个低秩矩阵。"}
+{"id": "q20", "type": "semantic", "doc": "03_大语言模型与幻觉.md", "question": "如何防止模型编造答案？", "evidence": "减少大模型幻觉的方法可以从数据、模型和应用三个层面入手", "answer": "RAG、提示词约束、降低温度、自检、微调、事实核查。", "evidence_all": ["减少大模型幻觉的方法可以从数据、模型和应用三个层面入手", "其他方法还包括"]}
+{"id": "q21", "type": "semantic", "doc": "03_大语言模型与幻觉.md", "question": "大模型为什么会一本正经地胡说八道？", "evidence": "幻觉产生的原因主要有", "answer": "数据错误、知识截止、训练目标、超出知识范围时补全答案。", "evidence_all": ["幻觉产生的原因主要有", "倾向于“补全”一个答案"]}
+{"id": "q22", "type": "keyword", "doc": "03_大语言模型与幻觉.md", "question": "什么是 Lost in the Middle？", "evidence": "中间迷失", "answer": "模型对长上下文中间部分信息利用率低。"}
+{"id": "q23", "type": "semantic", "doc": "04_检索增强生成RAG.md", "question": "和微调相比，用知识库外挂资料有什么好处？", "evidence": "与微调相比，RAG 的优势是知识更新快", "answer": "更新快、可追溯、私有数据留在本地。", "evidence_all": ["与微调相比，RAG 的优势是知识更新快", "私有数据留在本地知识库中"]}
+{"id": "q24", "type": "semantic", "doc": "04_检索增强生成RAG.md", "question": "切片切得太大有什么问题？", "evidence": "片段太大，一个片段会混合多个主题", "answer": "混合多个主题，向量模糊，精度下降，占用上下文。", "evidence_all": ["片段太小，容易丢失上下文", "片段太大，一个片段会混合多个主题"]}
+{"id": "q25", "type": "keyword", "doc": "04_检索增强生成RAG.md", "question": "BGE-Large-ZH-v1.5 的向量维度和最大输入长度是多少？", "evidence": "输出向量维度为 1024，最大输入长度为 512 个 token", "answer": "1024 维，512 token。"}
+{"id": "q26", "type": "keyword", "doc": "04_检索增强生成RAG.md", "question": "BM25 考虑了哪些因素？", "evidence": "BM25 综合考虑词频、逆文档频率和文档长度", "answer": "词频、逆文档频率、文档长度。"}
+{"id": "q27", "type": "semantic", "doc": "04_检索增强生成RAG.md", "question": "向量分数和关键词分数怎么合并？", "evidence": "最终得分 = 向量权重 × 向量相似度 + 关键词权重 × 关键词相似度", "answer": "按权重加权求和，权重之和为 1。", "evidence_all": ["最终得分 = 向量权重 × 向量相似度 + 关键词权重 × 关键词相似度", "相似度阈值（Similarity Threshold）用于过滤"]}
+{"id": "q28", "type": "semantic", "doc": "04_检索增强生成RAG.md", "question": "怎么衡量检索效果好不好？", "evidence": "检索环节常用命中率（Hit Rate）和平均倒数排名（MRR）", "answer": "命中率和 MRR。"}
+{"id": "q29", "type": "keyword", "doc": "05_课程安排与常见问题.md", "question": "CS-AI-301 的实验课在哪里上？", "evidence": "实验课在信息楼 B-305 机房", "answer": "信息楼 B-305 机房。"}
+{"id": "q30", "type": "keyword", "doc": "05_课程安排与常见问题.md", "question": "作业晚交了还能得多少分？", "evidence": "成绩按 80% 计算", "answer": "48 小时内按 80% 计算。"}
+{"id": "q31", "type": "keyword", "doc": "05_课程安排与常见问题.md", "question": "总评成绩里课程项目占多少？", "evidence": "期末课程项目占 40%", "answer": "40%。"}
+{"id": "q32", "type": "semantic", "doc": "05_课程安排与常见问题.md", "question": "RAGFlow 连不上本机的 Ollama 该怎么排查？", "evidence": "首先确认环境变量 OLLAMA_HOST 已设置为 0.0.0.0:11434", "answer": "设 OLLAMA_HOST、Base URL 用 host.docker.internal、放行防火墙。", "evidence_all": ["首先确认环境变量 OLLAMA_HOST", "检查 Windows 防火墙是否放行 11434 端口"]}
