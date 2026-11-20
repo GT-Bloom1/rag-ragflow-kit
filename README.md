@@ -1,6 +1,36 @@
 # rag-ragflow-kit：Ollama + RAGFlow 知识库搭建配套代码
 
-完整步骤见 [docs/RAG_完整教程.md](docs/RAG_完整教程.md)（PDF 版 `docs/RAG_完整教程.pdf`，Word 版 `docs/RAG_完整教程.docx`；修改 Markdown 后用 `python docs/build_docs.py` 重新生成，需要 pandoc 和 Chrome）。
+基于 Ollama + RAGFlow 的 RAG 知识库搭建、检索评测与网页演示代码。
+
+> 详细教程 `docs/RAG_完整教程.md`（及 PDF / Word 版）未随本仓库发布。修改 Markdown 后可用 `python docs/build_docs.py` 重新生成，需要 pandoc 和 Chrome。
+
+## 功能截图
+
+网页演示（`web_demo/app.py`）不需要 Docker 和 RAGFlow，直接在浏览器里完成建库、检索和问答。
+
+### 知识库：上传文档与分块
+
+![知识库页面：上传文档、配置 Chunk Size / Overlap、查看分块结果](docs/figures/web_demo_kb.png)
+
+支持上传 UTF-8 编码的 `.md` / `.txt`，调整 Chunk Size 与 Overlap 后重新分块，逐篇查看切分出的片段。
+
+### 检索测试：对比不同检索权重
+
+![检索测试页面：同一问题在关键词/向量/综合三种权重下的命中片段](docs/figures/web_demo_search.png)
+
+同一问题可分别用纯关键词、纯向量、混合权重检索，直观看出命中片段和分数构成（向量相似度、关键词得分）的差异。
+
+### 聊天助手：带原文引用的回答
+
+![聊天助手页面：回答中标注引用片段编号，可展开查看原文](docs/figures/web_demo_chat.png)
+
+先从知识库检索，再把片段交给大模型作答；回答中的 `[1]` `[2]` 对应下方引用片段，可展开核对原文。支持调整向量权重、Top N、阈值和 Temperature。
+
+### 参数实验：检索效果对比
+
+![检索参数对比图：Chunk Size、Overlap、向量权重对 Hit@K 和 MRR 的影响](docs/figures/local_experiments.png)
+
+用 32 个标注问题对比 Chunk Size、Overlap、向量权重对 Hit@1 / Hit@5 / MRR 以及证据被切断比例的影响。
 
 ## 目录
 
